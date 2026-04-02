@@ -1,5 +1,14 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client';
 
-const sqlite = new Database('sqlite.db');
-export const db = drizzle(sqlite);
+const url = process.env.DATABASE_URL;
+const authToken = process.env.DATABASE_AUTH_TOKEN;
+
+// Initialize LibSQL client for Turso (Remote/Serverless)
+// For local development, use sqlite.db if DATABASE_URL is missing
+export const client = createClient({
+  url: url || 'file:sqlite.db',
+  authToken: authToken,
+});
+
+export const db = drizzle(client);

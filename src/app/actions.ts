@@ -128,10 +128,10 @@ export async function dischargePatient(patientId: string) {
   if (!patient[0]) return 
   
   const bedId = patient[0].bedId
-  db.transaction((tx) => {
-    tx.update(PatientTable).set({ status: 'STABLE', bedId: null }).where(eq(PatientTable.id, patientId)).run()
+  db.transaction(async (tx) => {
+    await tx.update(PatientTable).set({ status: 'STABLE', bedId: null }).where(eq(PatientTable.id, patientId)).run()
     if (bedId) {
-       tx.update(BedTable).set({ status: 'AVAILABLE' }).where(eq(BedTable.id, bedId)).run()
+       await tx.update(BedTable).set({ status: 'AVAILABLE' }).where(eq(BedTable.id, bedId)).run()
     }
   })
   
@@ -179,8 +179,8 @@ export async function registerEmergency(data: any) {
   const erBeds = await db.select().from(BedTable).where(and(eq(BedTable.ward, 'ER-WARD'), eq(BedTable.status, 'AVAILABLE'))).limit(1).all()
   const bedId = erBeds[0]?.id || null
 
-  db.transaction((tx) => {
-    tx.insert(PatientTable).values({ 
+  db.transaction(async (tx) => {
+    await tx.insert(PatientTable).values({ 
       id, 
       mrn, 
       ...data, 
@@ -190,7 +190,7 @@ export async function registerEmergency(data: any) {
       bedId 
     }).run()
     if (bedId) {
-      tx.update(BedTable).set({ status: 'OCCUPIED' }).where(eq(BedTable.id, bedId)).run()
+      await tx.update(BedTable).set({ status: 'OCCUPIED' }).where(eq(BedTable.id, bedId)).run()
     }
   })
 
@@ -335,9 +335,9 @@ export async function assignEquipment(equipmentId: string, patientId: string, st
   const id = crypto.randomUUID()
   const startTime = new Date().toISOString()
   
-  db.transaction((tx) => {
-    tx.insert(AssetAssignmentTable).values({ id, equipmentId, patientId, assignedBy: staffId, startTime, status: 'ACTIVE' }).run()
-    tx.update(EquipmentTable).set({ status: 'IN_USE' }).where(eq(EquipmentTable.id, equipmentId)).run()
+  db.transaction(async (tx) => {
+    await tx.insert(AssetAssignmentTable).values({ id, equipmentId, patientId, assignedBy: staffId, startTime, status: 'ACTIVE' }).run()
+    await tx.update(EquipmentTable).set({ status: 'IN_USE' }).where(eq(EquipmentTable.id, equipmentId)).run()
   })
 
   revalidatePath('/inventory/equipment')
@@ -348,9 +348,9 @@ export async function releaseEquipment(assignmentId: string) {
   if (!assignment[0]) throw new Error('Assignment not found')
   
   const endTime = new Date().toISOString()
-  db.transaction((tx) => {
-    tx.update(AssetAssignmentTable).set({ endTime, status: 'RELEASED' }).where(eq(AssetAssignmentTable.id, assignmentId)).run()
-    tx.update(EquipmentTable).set({ status: 'AVAILABLE' }).where(eq(EquipmentTable.id, assignment[0].equipmentId)).run()
+  db.transaction(async (tx) => {
+    await tx.update(AssetAssignmentTable).set({ endTime, status: 'RELEASED' }).where(eq(AssetAssignmentTable.id, assignmentId)).run()
+    await tx.update(EquipmentTable).set({ status: 'AVAILABLE' }).where(eq(EquipmentTable.id, assignment[0].equipmentId)).run()
   })
   
   revalidatePath('/inventory/equipment')
