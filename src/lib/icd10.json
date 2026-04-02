@@ -1,0 +1,17 @@
+[
+  { "code": "I10", "description": "Essential (primary) hypertension" },
+  { "code": "E11.9", "description": "Type 2 diabetes mellitus without complications" },
+  { "code": "J06.9", "description": "Acute upper respiratory infection, unspecified" },
+  { "code": "M54.5", "description": "Low back pain" },
+  { "code": "I21.9", "description": "Acute myocardial infarction, unspecified" },
+  { "code": "J45.909", "description": "Unspecified asthma, uncomplicated" },
+  { "code": "N39.0", "description": "Urinary tract infection, site not specified" },
+  { "code": "E66.9", "description": "Obesity, unspecified" },
+  { "code": "Z00.00", "description": "Encounter for general adult medical examination without abnormal findings" },
+  { "code": "K21.9", "description": "Gastro-esophageal reflux disease without esophagitis" },
+  { "code": "F41.1", "description": "Generalized anxiety disorder" },
+  { "code": "F32.9", "description": "Major depressive disorder, single episode, unspecified" },
+  { "code": "I25.10", "description": "Atherosclerotic heart disease of native coronary artery without angina pectoris" },
+  { "code": "G47.00", "description": "Insomnia, unspecified" },
+  { "code": "R05", "description": "Cough" }
+]
