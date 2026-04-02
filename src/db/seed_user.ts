@@ -1,9 +1,7 @@
-import Database from 'better-sqlite3';
+import { client } from './index';
 import bcrypt from 'bcryptjs';
 
 async function seed() {
-  const db = new Database('sqlite.db');
-  
   console.log('Seeding secure users...');
   
   const hashedAdminPassword = await bcrypt.hash('admin123', 10);
@@ -19,11 +17,10 @@ async function seed() {
   ];
 
   for (const query of queries) {
-    db.exec(query);
+    await client.execute(query);
   }
 
   console.log('User Seed complete!');
-  db.close();
 }
 
 seed().catch(console.error);

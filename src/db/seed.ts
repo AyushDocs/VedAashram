@@ -1,14 +1,12 @@
-import Database from 'better-sqlite3';
+import { client } from './index';
 import bcrypt from 'bcryptjs';
 
 async function seed() {
-  const db = new Database('sqlite.db');
-  
   console.log('Seeding VedAashram tactical environment...');
   
-  db.exec('PRAGMA foreign_keys = OFF;');
+  await client.execute('PRAGMA foreign_keys = OFF;');
 
-  const queryList = [
+  const queries = [
     `DELETE FROM AssetAssignment;`,
     `DELETE FROM Equipment;`,
     `DELETE FROM PharmacyInventory;`,
@@ -67,14 +65,13 @@ async function seed() {
       ('EQ-D-01', 'Defib-Tactical', 'DEFIBRILLATOR', 'AVAILABLE', 'SN-D3001', '2026-04-01T00:00:00Z');`
   ];
 
-  for (const query of queryList) {
-    db.exec(query);
+  for (const query of queries) {
+    await client.execute(query);
   }
 
-  db.exec('PRAGMA foreign_keys = ON;');
+  await client.execute('PRAGMA foreign_keys = ON;');
 
   console.log('Tactical seeding complete!');
-  db.close();
 }
 
 seed().catch(console.error);
