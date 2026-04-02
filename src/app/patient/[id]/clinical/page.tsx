@@ -33,6 +33,7 @@ import {
   getLabOrdersForPatient
 } from '@/app/actions'
 import { calculateNews2, getRiskColor } from '@/lib/clinical'
+import { useAuth } from '@/components/auth/AuthContext'
 
 export default function ClinicalHub({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -49,6 +50,14 @@ export default function ClinicalHub({ params }: { params: Promise<{ id: string }
   const [icdSearch, setIcdSearch] = useState('')
   const [icdResults, setIcdResults] = useState<any[]>([])
   const [selectedIcd, setSelectedIcd] = useState<any>(null)
+  const { user } = useAuth()
+  
+  const [soap, setSoap] = useState({
+    subjective: '',
+    objective: '',
+    assessment: '',
+    plan: ''
+  })
 
   const fetchData = async () => {
     try {
@@ -80,6 +89,21 @@ export default function ClinicalHub({ params }: { params: Promise<{ id: string }
       setIcdResults([])
     }
   }, [icdSearch])
+
+  const handleSubmitNote = async () => {
+    if (!user) return
+    await addClinicalNote({
+      patientId: id,
+      staffId: user.id,
+      type: 'SOAP',
+      icdCode: selectedIcd?.code,
+      ...soap
+    })
+    setShowNoteForm(false)
+    setSoap({ subjective: '', objective: '', assessment: '', plan: '' })
+    setSelectedIcd(null)
+    fetchData()
+  }
 
   const latestVitals = vitals[0]
   const news2 = latestVitals ? calculateNews2({
@@ -356,13 +380,16 @@ export default function ClinicalHub({ params }: { params: Promise<{ id: string }
                   </div>
 
                   <div className="grid grid-cols-2 gap-8">
-                     <SoapInput label="Subjective" placeholder="Patient complaints, history..." color="border-emerald-500/20 focus:border-emerald-500" />
-                     <SoapInput label="Objective" placeholder="Physical exam findings, vitals summary..." color="border-blue-500/20 focus:border-blue-500" />
-                     <SoapInput label="Assessment" placeholder="Clinical reasoning, differential diagnosis..." color="border-purple-500/20 focus:border-purple-500" />
-                     <SoapInput label="Plan" placeholder="Medications, tests ordered, follow-up..." color="border-orange-500/20 focus:border-orange-500" />
+                     <SoapInput label="Subjective" value={soap.subjective} onChange={v => setSoap({...soap, subjective: v})} placeholder="Patient complaints, history..." color="border-emerald-500/20 focus:border-emerald-500" />
+                     <SoapInput label="Objective" value={soap.objective} onChange={v => setSoap({...soap, objective: v})} placeholder="Physical exam findings, vitals summary..." color="border-blue-500/20 focus:border-blue-500" />
+                     <SoapInput label="Assessment" value={soap.assessment} onChange={v => setSoap({...soap, assessment: v})} placeholder="Clinical reasoning, differential diagnosis..." color="border-purple-500/20 focus:border-purple-500" />
+                     <SoapInput label="Plan" value={soap.plan} onChange={v => setSoap({...soap, plan: v})} placeholder="Medications, tests ordered, follow-up..." color="border-orange-500/20 focus:border-orange-500" />
                   </div>
 
-                  <button className="w-full py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-600/30 transition-all flex items-center justify-center gap-3 active:scale-95">
+                  <button 
+                    onClick={handleSubmitNote}
+                    className="w-full py-6 bg-blue-600 hover:bg-blue-500 text-white rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-600/30 transition-all flex items-center justify-center gap-3 active:scale-95"
+                  >
                      <CheckCircle2 size={18} /> Finalize Node Entry
                   </button>
                </div>
@@ -398,11 +425,13 @@ function SoapPart({ label, content, color }: { label: string, content: string, c
   )
 }
 
-function SoapInput({ label, placeholder, color }: { label: string, placeholder: string, color: string }) {
+function SoapInput({ label, value, onChange, placeholder, color }: { label: string, value: string, onChange: (v: string) => void, placeholder: string, color: string }) {
   return (
     <div className="space-y-4">
        <label className="text-[10px] font-black uppercase tracking-widest text-slate-600">{label}</label>
        <textarea 
+         value={value}
+         onChange={(e) => onChange(e.target.value)}
          placeholder={placeholder}
          className={`w-full bg-slate-950 border ${color} p-6 rounded-2xl text-xs text-white focus:ring-0 outline-none h-32 transition-all`}
        />

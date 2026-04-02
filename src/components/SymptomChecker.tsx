@@ -5,9 +5,6 @@ import {
   Send, 
   Bot, 
   X, 
-  Send, 
-  Bot, 
-  X, 
   CheckCircle2, 
   Stethoscope, 
   History,
@@ -61,8 +58,11 @@ export function SymptomChecker({ patientId, onClose }: { patientId: string, onCl
     if (!result) return
     await addClinicalNote({
       patientId,
-      category: 'AI_TRIAGE',
-      content: `AI Triage Result: Level ${result.score} (${result.recommendation}). Symptoms: ${messages[messages.length - 2].content}. Recommendation: ${result.reason}`
+      staffId: 'D001', // Using primary medical director node for AI validation
+      type: 'PROGRESS',
+      subjective: `Patient reported symptoms: ${messages[messages.length - 2].content}`,
+      assessment: `AI Triage Verdict: Level ${result.score} (${result.recommendation.replace('_', ' ')})`,
+      plan: `AI Recommendation: ${result.reason}`
     })
     onClose()
   }

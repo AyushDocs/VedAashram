@@ -29,8 +29,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshAction = async () => {
     try {
       const resp = await refreshAccessToken()
-      setAccessToken(resp.accessToken)
-      setUser(resp.user)
+      if (resp) {
+        setAccessToken(resp.accessToken)
+        setUser(resp.user)
+      } else {
+        setAccessToken(null)
+        setUser(null)
+      }
     } catch (e) {
       setAccessToken(null)
       setUser(null)

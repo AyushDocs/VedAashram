@@ -92,7 +92,7 @@ export async function getVitalsForPatient(patientId: string) {
   return await db.select().from(VitalsTable).where(eq(VitalsTable.patientId, patientId)).orderBy(desc(VitalsTable.recordedAt)).all()
 }
 
-export async function recordVitals(data: any) {
+export async function recordVitals(data: { patientId: string, staffId: string, heartRate?: number, bpSystolic?: number, bpDiastolic?: number, temp?: number, spO2?: number, respiratoryRate?: number, nuringNote?: string, consciousness?: 'ALERT' | 'ACVPU', supplementalOxygen?: boolean }) {
   const id = crypto.randomUUID()
   const recordedAt = new Date().toISOString()
   await db.insert(VitalsTable).values({ id, ...data, recordedAt })
@@ -145,7 +145,18 @@ export async function getClinicalNotesForPatient(patientId: string) {
   return await db.select().from(ClinicalNotesTable).where(eq(ClinicalNotesTable.patientId, patientId)).orderBy(desc(ClinicalNotesTable.createdAt)).all()
 }
 
-export async function addClinicalNote(data: any) {
+export interface ClinicalNoteInput {
+  patientId: string
+  staffId: string
+  type: 'SOAP' | 'PROGRESS' | 'DISCHARGE' | 'REFERRAL'
+  icdCode?: string
+  subjective?: string
+  objective?: string
+  assessment?: string
+  plan?: string
+}
+
+export async function addClinicalNote(data: ClinicalNoteInput) {
   const id = crypto.randomUUID()
   await db.insert(ClinicalNotesTable).values({ id, ...data, createdAt: new Date().toISOString() })
   revalidatePath(`/patient/${data.patientId}`)
@@ -373,6 +384,12 @@ export async function getAvailableERBeds() {
 }
 
 export async function getStaff() { return await db.select().from(StaffTable).all() }
+
+export async function addStaff(data: any) {
+  const id = crypto.randomUUID()
+  await db.insert(StaffTable).values({ id, ...data, isActive: true })
+  revalidatePath('/staff')
+}
 
 export async function checkIn(staffId: string) {
   const id = crypto.randomUUID(); await db.insert(ShiftTable).values({ id, staffId, checkIn: new Date().toISOString(), status: 'ACTIVE' }); revalidatePath('/')

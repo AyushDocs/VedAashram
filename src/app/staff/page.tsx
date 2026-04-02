@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 export default async function StaffPage() {
   const user = await getCurrentUser()
   
-  if (user.role !== 'ADMIN') {
+  if (!user || user.role !== 'ADMIN') {
     redirect('/')
   }
 
